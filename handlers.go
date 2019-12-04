@@ -5,5 +5,8 @@ import (
 )
 
 func ConfigureHandlers(r *mux.Router) {
-	r.HandleFunc("/", MainFunc).Methods("GET")
+	r.HandleFunc("/request", RequestHandler).Methods("POST")
+	r.HandleFunc("/tasks", AllTasksHandler).Methods("GET")
+	r.HandleFunc("/tasks/{id}", TaskIdHandler).Methods("GET")
+	r.HandleFunc("/tasks/{id}", RemoveTaskIdHandler).Methods("DELETE")
 }

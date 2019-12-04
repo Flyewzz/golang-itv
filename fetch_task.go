@@ -49,3 +49,12 @@ func (lc *ListController) GetById(id int) (*Task, error) {
 	}
 	return task, nil
 }
+
+func (lc *ListController) RemoveById(id int) error {
+	_, ok := lc.tasks[id]
+	if !ok {
+		return errors.New("A task was not found")
+	}
+	delete(lc.tasks, id)
+	return nil
+}
