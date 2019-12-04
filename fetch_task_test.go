@@ -3,7 +3,6 @@ package main
 import (
 	"reflect"
 	"testing"
-	"github.com/Flyewzz/"
 )
 
 func TestGetListController(t *testing.T) {
