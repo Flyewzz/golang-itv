@@ -1,43 +1,51 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"errors"
+	"sync"
 )
 
-type FetchTask struct {
+type Task struct {
 	Method string `json:"method"`
 	Url    string `json:"url"`
 }
 
-var FetchTaskChannel chan *FetchTask
+type ListController struct {
+	currentId int
+	tasks     map[int]*Task
+}
 
-// var fetchOne sync.Once
+var listController ListController
+var listOnce sync.Once
 
-var FetchDone chan struct{}
-
-// var doneOne sync.Once
-
-// func GetFetchTaskChannel() *chan *FetchTask {
-// 	fetchOne.Do(func() {
-// 		fetchTaskChannel = make(chan *FetchTask)
-// 	})
-// 	return &fetchTaskChannel
-// }
-
-var ListOfTasks []*FetchTask
-
-// var fetchTaskOne sync.Once
-
-func FetchTaskWorker() {
-	select {
-	case task := <-FetchTaskChannel:
-		_, err := SendRequest(&http.Client{}, task.Method, task.Url)
-		if err != nil {
-			log.Println(err)
+func GetListController() *ListController {
+	listOnce.Do(func() {
+		listController = ListController{
+			currentId: 0,
+			tasks:     make(map[int]*Task),
 		}
-	case <-FetchDone:
-		log.Println("FetchTask worker was correctly finished.")
-		return
+	})
+	return &listController
+}
+
+func (lc *ListController) AddNew(task *Task) int {
+	lc.currentId++
+	lc.tasks[lc.currentId] = task
+	return lc.currentId
+}
+
+func (lc *ListController) GetAll() []Task {
+	var tasks []Task
+	for _, task := range lc.tasks {
+		tasks = append(tasks, *task)
 	}
+	return tasks
+}
+
+func (lc *ListController) GetById(id int) (*Task, error) {
+	task, ok := lc.tasks[id]
+	if !ok {
+		return nil, errors.New("A task was not found")
+	}
+	return task, nil
 }

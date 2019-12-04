@@ -10,10 +10,8 @@ import (
 func main() {
 	// var err error
 	PrepareConfig()
-	// Check for connection
-	go FetchTaskWorker()
 	r := GetRouter()
 	ConfigureHandlers(r)
-	fmt.Println("Server is starting...")
+	fmt.Println("Server is listening...")
 	http.ListenAndServe(":"+viper.GetString("port"), r)
 }
