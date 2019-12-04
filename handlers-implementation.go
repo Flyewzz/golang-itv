@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // ----------------------------------------------------------------------------
@@ -19,20 +21,22 @@ import (
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	method, url := r.FormValue("method"), r.FormValue("url")
 	fmt.Printf("method: %s, url: %s\n", method, url)
+	respId := GetListController().AddNew(&Task{
+		Method: method,
+		Url:    url,
+	})
 	timeout := 5 * time.Second
 	resp, err := SendRequest(&http.Client{
 		Timeout: timeout,
-	}, method, url)
+	}, method, url, respId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 Internal Server Error"))
+		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 Internal Server Error"))
+		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
@@ -46,7 +50,7 @@ func AllTasksHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TaskIdHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -62,7 +66,7 @@ func TaskIdHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveTaskIdHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("id")
+	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)

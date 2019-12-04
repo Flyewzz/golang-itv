@@ -5,11 +5,6 @@ import (
 	"sync"
 )
 
-type Task struct {
-	Method string `json:"method"`
-	Url    string `json:"url"`
-}
-
 type ListController struct {
 	currentId int
 	tasks     map[int]*Task
