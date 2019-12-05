@@ -111,31 +111,30 @@ func TestListController_GetAll(t *testing.T) {
 }
 
 func TestListController_GetById(t *testing.T) {
-
-	// testTasks := []Task{
-	// 	Task{
-	// 		Method: "GET",
-	// 		Url:    "http://google.ru",
-	// 	},
-	// 	Task{
-	// 		Method: "POST",
-	// 		Url:    "http://yandex.ru",
-	// 	},
-	// 	Task{
-	// 		Method: "PUT",
-	// 		Url:    "http://rambler.ru",
-	// 	},
-	// 	Task{
-	// 		Method: "DELETE",
-	// 		Url:    "http://yahoo.com",
-	// 	},
-	// }
-	// mapTasks := map[int]*Task{
-	// 	1: &testTasks[0],
-	// 	2: &testTasks[1],
-	// 	3: &testTasks[2],
-	// 	4: &testTasks[3],
-	// }
+	testTasks := []Task{
+		Task{
+			Method: "GET",
+			Url:    "http://google.ru",
+		},
+		Task{
+			Method: "POST",
+			Url:    "http://yandex.ru",
+		},
+		Task{
+			Method: "PUT",
+			Url:    "http://rambler.ru",
+		},
+		Task{
+			Method: "DELETE",
+			Url:    "http://yahoo.com",
+		},
+	}
+	mapTasks := map[int]*Task{
+		1: &testTasks[0],
+		2: &testTasks[1],
+		3: &testTasks[2],
+		4: &testTasks[3],
+	}
 	type fields struct {
 		currentId int
 		tasks     map[int]*Task
@@ -149,8 +148,72 @@ func TestListController_GetById(t *testing.T) {
 		args    args
 		want    *Task
 		wantErr bool
-	}{}
-	// errors.New("A task was not found")
+	}{
+		{
+			name: "get 3",
+			fields: fields{
+				currentId: 4,
+				tasks:     mapTasks,
+			},
+			args: args{
+				id: 3,
+			},
+			want:    mapTasks[3],
+			wantErr: false,
+		},
+
+		{
+			name: "get 2",
+			fields: fields{
+				currentId: 4,
+				tasks:     mapTasks,
+			},
+			args: args{
+				id: 2,
+			},
+			want:    mapTasks[2],
+			wantErr: false,
+		},
+
+		{
+			name: "get 4",
+			fields: fields{
+				currentId: 4,
+				tasks:     mapTasks,
+			},
+			args: args{
+				id: 4,
+			},
+			want:    mapTasks[4],
+			wantErr: false,
+		},
+
+		{
+			name: "get 0",
+			fields: fields{
+				currentId: 4,
+				tasks:     mapTasks,
+			},
+			args: args{
+				id: 0,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+
+		{
+			name: "get -5",
+			fields: fields{
+				currentId: 4,
+				tasks:     mapTasks,
+			},
+			args: args{
+				id: -5,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			lc := &ListController{
