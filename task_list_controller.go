@@ -2,12 +2,16 @@ package main
 
 import (
 	"errors"
+	"sort"
 	"sync"
+
+	"github.com/spf13/viper"
 )
 
 type ListController struct {
-	currentId int
-	tasks     map[int]*Task
+	itemsPerPage int
+	currentId    int
+	tasks        map[int]*Task
 }
 
 var listController ListController
@@ -16,8 +20,9 @@ var listOnce sync.Once
 func GetListController() *ListController {
 	listOnce.Do(func() {
 		listController = ListController{
-			currentId: 0,
-			tasks:     make(map[int]*Task),
+			itemsPerPage: viper.GetInt("itemsPerPage"),
+			currentId:    0,
+			tasks:        make(map[int]*Task),
 		}
 	})
 	return &listController
@@ -31,10 +36,32 @@ func (lc *ListController) AddNew(task *Task) int {
 
 func (lc *ListController) GetAll() []Task {
 	var tasks []Task
-	for _, task := range lc.tasks {
-		tasks = append(tasks, *task)
+	var ids []int
+	for id := range lc.tasks {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids)
+	for _, id := range ids {
+		tasks = append(tasks, *lc.tasks[id])
 	}
 	return tasks
+}
+
+func (lc *ListController) GetTasksByPage(page int) ([]Task, error) {
+	tasks := lc.GetAll()
+	itemsPerPage := lc.itemsPerPage
+	start := (page - 1) * itemsPerPage
+	stop := start + itemsPerPage
+
+	if start > len(tasks) || start < 0 {
+		return nil, errors.New("The incorrect page number.")
+	}
+
+	if stop > len(tasks) {
+		stop = len(tasks)
+	}
+
+	return tasks[start:stop], nil
 }
 
 func (lc *ListController) GetById(id int) (*Task, error) {

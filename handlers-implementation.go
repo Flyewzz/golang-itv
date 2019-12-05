@@ -19,8 +19,12 @@ import (
 // ----------------------------------------------------------------------------
 
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	method, url := r.FormValue("method"), r.FormValue("url")
+	method, url := r.URL.Query().Get("method"), r.URL.Query().Get("url")
 	fmt.Printf("method: %s, url: %s\n", method, url)
+	if !CheckMethodValid(method) {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 	respId := GetListController().AddNew(&Task{
 		Method: method,
 		Url:    url,
@@ -45,6 +49,22 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 func AllTasksHandler(w http.ResponseWriter, r *http.Request) {
 	tasks := GetListController().GetAll()
+	data, _ := json.Marshal(tasks)
+	w.Write(data)
+}
+
+func PageTasksHandler(w http.ResponseWriter, r *http.Request) {
+	strNum := mux.Vars(r)["number"]
+	num, err := strconv.Atoi(strNum)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	tasks, err := GetListController().GetTasksByPage(num)
+	if err != nil {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
 	data, _ := json.Marshal(tasks)
 	w.Write(data)
 }
