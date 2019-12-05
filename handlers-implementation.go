@@ -20,7 +20,6 @@ import (
 
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	method, url := r.URL.Query().Get("method"), r.URL.Query().Get("url")
-	fmt.Printf("method: %s, url: %s\n", method, url)
 	if !CheckMethodValid(method) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
