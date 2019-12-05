@@ -13,3 +13,8 @@ The description of the service is below:
 *	DELETE /tasks/{id}       (id:integer)       => a server removes the task you want (with #id)
 
 !This repository uses Continuous Integration system!
+
+You can test this system. A site is available [there](https://itv.fezzo.ru) (The main page will not answer, use other API options)
+
+https://itv.fezzo.ru/tasks (to obtain all the tasks on the server)
+
