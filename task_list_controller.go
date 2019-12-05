@@ -47,6 +47,12 @@ func (lc *ListController) GetAll() []Task {
 	return tasks
 }
 
+func (lc *ListController) RemoveAll() {
+	for id := range lc.tasks {
+		delete(lc.tasks, id)
+	}
+}
+
 func (lc *ListController) GetTasksByPage(page int) ([]Task, error) {
 	tasks := lc.GetAll()
 	itemsPerPage := lc.itemsPerPage

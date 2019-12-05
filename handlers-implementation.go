@@ -52,6 +52,11 @@ func AllTasksHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func AllTasksRemoveHandler(w http.ResponseWriter, r *http.Request) {
+	GetListController().RemoveAll()
+	w.Write([]byte("All tasks was successfully deleted."))
+}
+
 func PageTasksHandler(w http.ResponseWriter, r *http.Request) {
 	strNum := mux.Vars(r)["number"]
 	num, err := strconv.Atoi(strNum)

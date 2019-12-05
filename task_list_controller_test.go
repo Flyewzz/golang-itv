@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -79,9 +78,6 @@ func TestListController_GetAll(t *testing.T) {
 		2: &testTasks[1],
 		3: &testTasks[2],
 		4: &testTasks[3],
-	}
-	for _, a := range mapTasks {
-		fmt.Println(a.Url)
 	}
 	tests := []struct {
 		name   string
@@ -440,6 +436,65 @@ func TestListController_GetTasksByPage(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ListController.GetTasksByPage() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestListController_RemoveAll(t *testing.T) {
+	type fields struct {
+		itemsPerPage int
+		currentId    int
+		tasks        map[int]*Task
+	}
+
+	testTasks := []Task{
+		{
+			Method: "GET",
+			Url:    "Url1",
+		},
+		{
+			Method: "POST",
+			Url:    "Url2",
+		},
+	}
+
+	mapTasks := map[int]*Task{
+		1: &testTasks[0],
+		2: &testTasks[1],
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "Non-empty map",
+			fields: fields{
+				itemsPerPage: 2,
+				currentId:    2,
+				tasks:        mapTasks,
+			},
+		},
+		{
+			name: "Empty map",
+			fields: fields{
+				itemsPerPage: 2,
+				currentId:    0,
+				tasks:        make(map[int]*Task),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lc := &ListController{
+				itemsPerPage: tt.fields.itemsPerPage,
+				currentId:    tt.fields.currentId,
+				tasks:        tt.fields.tasks,
+			}
+			lc.RemoveAll()
+			if len(lc.tasks) != 0 {
+				t.Errorf("Expected 0 tasks, but got: %d\n", len(lc.tasks))
 			}
 		})
 	}
