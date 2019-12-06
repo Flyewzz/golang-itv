@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func SendRequest(client *http.Client, method, url string) (*Response, error) {
+func SendRequest(client *http.Client, method, url string, id int) (*Response, error) {
 	var resp *http.Response
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, url, nil)
@@ -21,7 +21,7 @@ func SendRequest(client *http.Client, method, url string) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewResponse(1, resp.Status,
+	return NewResponse(id, resp.Status,
 		HeadersToString(&resp.Header), string(bodyText), resp.ContentLength), nil
 
 }
