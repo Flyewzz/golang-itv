@@ -27,5 +27,5 @@ jobs:
     - name: Build
       run: go build -v .
     
-    - name: Run all tests (with --race)
-      run: go test --race
+    - name: Run all tests (with -race)
+      run: go test -race
