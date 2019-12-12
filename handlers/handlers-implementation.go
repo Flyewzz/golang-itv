@@ -1,35 +1,29 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/Flyewzz/golang-itv/features"
+	. "github.com/Flyewzz/golang-itv/models"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
-// ----------------------------------------------------------------------------
-// *****************************          *************************************
-// ***************************** Handlers *************************************
-// *****************************          *************************************
-// ----------------------------------------------------------------------------
-
-func RequestHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) RequestHandler(w http.ResponseWriter, r *http.Request) {
 	method, url := r.URL.Query().Get("method"), r.URL.Query().Get("url")
 	if !CheckMethodValid(method) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	respId := GetListController().AddNew(&Task{
+	respId := uh.StoreController.Add(&Task{
 		Method: method,
 		Url:    url,
 	})
 	timeout := 5 * time.Second
-	resp, err := SendRequest(&http.Client{
+	resp, err := uh.Executor.Execute(&http.Client{
 		Timeout: timeout,
 	}, method, url, respId)
 	if err != nil {
@@ -46,25 +40,25 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func AllTasksHandler(w http.ResponseWriter, r *http.Request) {
-	tasks := GetListController().GetAll()
+func (uh *UserHandler) AllTasksHandler(w http.ResponseWriter, r *http.Request) {
+	tasks := uh.StoreController.GetAll()
 	data, _ := json.Marshal(tasks)
 	w.Write(data)
 }
 
-func AllTasksRemoveHandler(w http.ResponseWriter, r *http.Request) {
-	GetListController().RemoveAll()
+func (uh *UserHandler) AllTasksRemoveHandler(w http.ResponseWriter, r *http.Request) {
+	uh.StoreController.RemoveAll()
 	w.Write([]byte("All tasks was successfully deleted."))
 }
 
-func PageTasksHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) PageTasksHandler(w http.ResponseWriter, r *http.Request) {
 	strNum := mux.Vars(r)["number"]
 	num, err := strconv.Atoi(strNum)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	tasks, err := GetListController().GetTasksByPage(num)
+	tasks, err := uh.StoreController.GetTasksByPage(num)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -73,14 +67,14 @@ func PageTasksHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func TaskIdHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) TaskIdHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	task, err := GetListController().GetById(numId)
+	task, err := uh.StoreController.GetById(numId)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -89,27 +83,17 @@ func TaskIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func RemoveTaskIdHandler(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) RemoveTaskIdHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	err = GetListController().RemoveById(numId)
+	err = uh.StoreController.RemoveById(numId)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 	w.Write([]byte(fmt.Sprintf("Task with id %d was successfully deleted.", numId)))
-}
-
-func HeadersToString(reqHeader *http.Header) string {
-	var result []string
-	for name, headers := range *reqHeader {
-		for _, h := range headers {
-			result = append(result, fmt.Sprintf("%v: %v\n", name, h))
-		}
-	}
-	return strings.Join(result, "\n")
 }

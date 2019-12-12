@@ -1,27 +1,40 @@
-package main
+package store
 
 import (
 	"reflect"
+	"sync"
 	"testing"
+
+	. "github.com/Flyewzz/golang-itv/models"
 )
 
-func TestGetListController(t *testing.T) {
-	tests := []struct {
-		name string
-		want *ListController
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetListController(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetListController() = %v, want %v", got, tt.want)
-			}
-		})
+func NewMockStoreController(itemsPerPage, startId int, tasks map[int]*Task) *StoreController {
+	return &StoreController{
+		itemsPerPage: itemsPerPage,
+		currentId:    startId,
+		tasks:        tasks,
+		mtx:          new(sync.Mutex),
 	}
 }
 
-func TestListController_AddNew(t *testing.T) {
+func TestGetStoreController(t *testing.T) {
+	t.Skip()
+	// tests := []struct {
+	// 	name string
+	// 	want *StoreController
+	// }{
+	// 	// TODO: Add test cases.
+	// }
+	// for _, tt := range tests {
+	// 	t.Run(tt.name, func(t *testing.T) {
+	// 		if got := NewStoreController(); !reflect.DeepEqual(got, tt.want) {
+	// 			t.Errorf("NewStoreController() = %v, want %v", got, tt.want)
+	// 		}
+	// 	})
+	// }
+}
+
+func TestStoreController_Add(t *testing.T) {
 	type fields struct {
 		currentId int
 		tasks     map[int]*Task
@@ -39,18 +52,19 @@ func TestListController_AddNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				currentId: tt.fields.currentId,
-				tasks:     tt.fields.tasks,
-			}
-			if got := lc.AddNew(tt.args.task); got != tt.want {
-				t.Errorf("ListController.AddNew() = %v, want %v", got, tt.want)
+			sc := NewMockStoreController(
+				2,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			if got := sc.Add(tt.args.task); got != tt.want {
+				t.Errorf("StoreController.AddNew() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestListController_GetAll(t *testing.T) {
+func TestStoreController_GetAll(t *testing.T) {
 	type fields struct {
 		currentId int
 		tasks     map[int]*Task
@@ -95,18 +109,19 @@ func TestListController_GetAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				currentId: tt.fields.currentId,
-				tasks:     tt.fields.tasks,
-			}
-			if got := lc.GetAll(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListController.GetAll() = %v, want %v", got, tt.want)
+			sc := NewMockStoreController(
+				2,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			if got := sc.GetAll(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StoreController.GetAll() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestListController_GetById(t *testing.T) {
+func TestStoreController_GetById(t *testing.T) {
 	testTasks := []Task{
 		Task{
 			Method: "GET",
@@ -212,23 +227,24 @@ func TestListController_GetById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				currentId: tt.fields.currentId,
-				tasks:     tt.fields.tasks,
-			}
-			got, err := lc.GetById(tt.args.id)
+			sc := NewMockStoreController(
+				2,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			got, err := sc.GetById(tt.args.id)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ListController.GetById() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreController.GetById() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListController.GetById() = %v, want %v", got, tt.want)
+				t.Errorf("StoreController.GetById() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestListController_RemoveById(t *testing.T) {
+func TestStoreController_RemoveById(t *testing.T) {
 	testTasks := []Task{
 		Task{
 			Method: "GET",
@@ -291,21 +307,22 @@ func TestListController_RemoveById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				currentId: tt.fields.currentId,
-				tasks:     tt.fields.tasks,
-			}
-			if err := lc.RemoveById(tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("ListController.RemoveById() error = %v, wantErr %v", err, tt.wantErr)
+			sc := NewMockStoreController(
+				2,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			if err := sc.RemoveById(tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("StoreController.RemoveById() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if _, ok := tt.fields.tasks[tt.args.id]; ok {
-				t.Errorf("ListController.RemoveById() expected 'ok' value: %v, but got %v", !ok, ok)
+				t.Errorf("StoreController.RemoveById() expected 'ok' value: %v, but got %v", !ok, ok)
 			}
 		})
 	}
 }
 
-func TestListController_GetTasksByPage(t *testing.T) {
+func TestStoreController_GetTasksByPage(t *testing.T) {
 	// Items (tasks) per page for testing
 	itemsPerPage := 2
 	type fields struct {
@@ -424,24 +441,24 @@ func TestListController_GetTasksByPage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				itemsPerPage: tt.fields.itemsPerPage,
-				currentId:    tt.fields.currentId,
-				tasks:        tt.fields.tasks,
-			}
-			got, err := lc.GetTasksByPage(tt.args.page)
+			sc := NewMockStoreController(
+				tt.fields.itemsPerPage,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			got, err := sc.GetTasksByPage(tt.args.page)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ListController.GetTasksByPage() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreController.GetTasksByPage() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListController.GetTasksByPage() = %v, want %v", got, tt.want)
+				t.Errorf("StoreController.GetTasksByPage() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestListController_RemoveAll(t *testing.T) {
+func TestStoreController_RemoveAll(t *testing.T) {
 	type fields struct {
 		itemsPerPage int
 		currentId    int
@@ -487,14 +504,14 @@ func TestListController_RemoveAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := &ListController{
-				itemsPerPage: tt.fields.itemsPerPage,
-				currentId:    tt.fields.currentId,
-				tasks:        tt.fields.tasks,
-			}
-			lc.RemoveAll()
-			if len(lc.tasks) != 0 {
-				t.Errorf("Expected 0 tasks, but got: %d\n", len(lc.tasks))
+			sc := NewMockStoreController(
+				tt.fields.itemsPerPage,
+				tt.fields.currentId,
+				tt.fields.tasks,
+			)
+			sc.RemoveAll()
+			if len(sc.tasks) != 0 {
+				t.Errorf("Expected 0 tasks, but got: %d\n", len(sc.tasks))
 			}
 		})
 	}

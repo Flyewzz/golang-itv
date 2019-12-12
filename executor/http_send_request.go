@@ -1,12 +1,15 @@
-package main
+package executor
 
 import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/Flyewzz/golang-itv/features"
+	"github.com/Flyewzz/golang-itv/models"
 )
 
-func SendRequest(client *http.Client, method, url string, id int) (*Response, error) {
+func (ex HttpExecutor) Execute(client *http.Client, method, url string, id int) (*models.Response, error) {
 	var resp *http.Response
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, url, nil)
@@ -21,7 +24,7 @@ func SendRequest(client *http.Client, method, url string, id int) (*Response, er
 	if err != nil {
 		return nil, err
 	}
-	return NewResponse(id, resp.Status,
-		HeadersToString(&resp.Header), string(bodyText), resp.ContentLength), nil
+	return models.NewResponse(id, resp.Status,
+		features.HeadersToString(&resp.Header), string(bodyText), resp.ContentLength), nil
 
 }
