@@ -5,10 +5,10 @@ import (
 )
 
 type Store interface {
-	Add(task *models.Task) int
-	GetAll() []models.Task
-	GetTasksByPage(page int) ([]models.Task, error)
-	GetById(id int) (*models.Task, error)
+	Add(request *models.Request) int
+	GetAll() []models.Request
+	GetByPage(page int) ([]models.Request, error)
+	GetById(id int) (*models.Request, error)
 	RemoveById(id int) error
 	RemoveAll()
 }
