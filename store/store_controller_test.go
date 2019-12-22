@@ -71,52 +71,77 @@ func getTestRequests() []Request {
 	}
 }
 
-func TestGetStoreController(t *testing.T) {
-	t.Skip()
-	// tests := []struct {
-	// 	name string
-	// 	want *StoreController
-	// }{
-	// 	// TODO: Add test cases.
-	// }
-	// for _, tt := range tests {
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		if got := NewStoreController(); !reflect.DeepEqual(got, tt.want) {
-	// 			t.Errorf("NewStoreController() = %v, want %v", got, tt.want)
-	// 		}
-	// 	})
-	// }
-}
-
 func TestStoreController_Add(t *testing.T) {
-	t.Skip()
-	// type fields struct {
-	// 	currentId int
-	// 	requests  map[int]*Request
-	// }
-	// type args struct {
-	// 	request *Request
-	// }
-	// tests := []struct {
-	// 	name   string
-	// 	fields fields
-	// 	args   args
-	// 	want   int
-	// }{
-	// 	// TODO: Add test cases.
-	// }
-	// for _, tt := range tests {
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		sc := newMockStoreController(
-	// 			2,
-	// 			tt.fields.currentId,
-	// 			tt.fields.requests,
-	// 		)
-	// 		if got := sc.Add(tt.args.request); got != tt.want {
-	// 			t.Errorf("StoreController.AddNew() = %v, want %v", got, tt.want)
-	// 		}
-	// 	})
-	// }
+	type fields struct {
+		currentId int
+		requests  map[int]*Request
+	}
+	type args struct {
+		request *Request
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{
+			name: "Expected 4",
+			fields: fields{
+				currentId: 3,
+				requests:  make(map[int]*Request),
+			},
+			args: args{
+				request: NewRequest(nil, nil),
+			},
+			want: 4,
+		},
+		{
+			name: "Expected 1",
+			fields: fields{
+				currentId: 0,
+				requests:  make(map[int]*Request),
+			},
+			args: args{
+				request: NewRequest(nil, nil),
+			},
+			want: 1,
+		},
+		{
+			name: "Expected 2",
+			fields: fields{
+				currentId: 1,
+				requests:  make(map[int]*Request),
+			},
+			args: args{
+				request: NewRequest(nil, nil),
+			},
+			want: 2,
+		},
+		{
+			name: "Expected 9999",
+			fields: fields{
+				currentId: 9998,
+				requests:  make(map[int]*Request),
+			},
+			args: args{
+				request: NewRequest(nil, nil),
+			},
+			want: 9999,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sc := newMockStoreController(
+				2,
+				tt.fields.currentId,
+				tt.fields.requests,
+			)
+			if got := sc.Add(tt.args.request); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StoreController.AddNew() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
 func TestStoreController_GetAll(t *testing.T) {
