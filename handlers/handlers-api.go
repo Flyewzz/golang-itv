@@ -4,11 +4,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func ConfigureHandlers(r *mux.Router, uh *UserHandler) {
+func ConfigureHandlers(r *mux.Router, uh *HandlerData) {
 	r.HandleFunc("/request", uh.RequestHandler).Methods("GET")
-	r.HandleFunc("/tasks", uh.AllTasksHandler).Methods("GET")
-	r.HandleFunc("/tasks", uh.AllTasksRemoveHandler).Methods("DELETE")
-	r.HandleFunc("/tasks/page/{number}", uh.PageTasksHandler).Methods("GET")
-	r.HandleFunc("/tasks/{id}", uh.TaskIdHandler).Methods("GET")
-	r.HandleFunc("/tasks/{id}", uh.RemoveTaskIdHandler).Methods("DELETE")
+	r.HandleFunc("/requests", uh.AllRequestsHandler).Methods("GET")
+	r.HandleFunc("/requests", uh.AllRequestsRemoveHandler).Methods("DELETE")
+	r.HandleFunc("/requests/page/{number}", uh.PageHandler).Methods("GET")
+	r.HandleFunc("/requests/{id}", uh.RequestIdHandler).Methods("GET")
+	r.HandleFunc("/requests/{id}", uh.RemoveRequestIdHandler).Methods("DELETE")
 }

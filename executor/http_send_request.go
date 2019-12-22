@@ -9,10 +9,10 @@ import (
 	"github.com/Flyewzz/golang-itv/models"
 )
 
-func (ex HttpExecutor) Execute(client *http.Client, method, url string, id int) (*models.Response, error) {
+func (ex HttpExecutor) Execute(client *http.Client, task *models.Task) (*models.Response, error) {
 	var resp *http.Response
-	method = strings.ToUpper(method)
-	request, err := http.NewRequest(method, url, nil)
+	method := strings.ToUpper(task.Method)
+	request, err := http.NewRequest(method, task.Url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (ex HttpExecutor) Execute(client *http.Client, method, url string, id int) 
 	if err != nil {
 		return nil, err
 	}
-	return models.NewResponse(id, resp.Status,
+	return models.NewResponse(resp.Status,
 		features.HeadersToString(&resp.Header), string(bodyText), resp.ContentLength), nil
 
 }

@@ -7,5 +7,5 @@ import (
 )
 
 type Executor interface {
-	Execute(client *http.Client, method, url string, id int) (*models.Response, error)
+	Execute(client *http.Client, task *models.Task) (*models.Response, error)
 }

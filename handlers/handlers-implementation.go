@@ -3,35 +3,39 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/Flyewzz/golang-itv/features"
-	. "github.com/Flyewzz/golang-itv/models"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
+
+	. "github.com/Flyewzz/golang-itv/features"
+	"github.com/Flyewzz/golang-itv/models"
+	"github.com/gorilla/mux"
 )
 
-func (uh *UserHandler) RequestHandler(w http.ResponseWriter, r *http.Request) {
+func (hd *HandlerData) RequestHandler(w http.ResponseWriter, r *http.Request) {
 	method, url := r.URL.Query().Get("method"), r.URL.Query().Get("url")
 	if !CheckMethodValid(method) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	respId := uh.StoreController.Add(&Task{
+	task := &models.Task{
 		Method: method,
 		Url:    url,
-	})
-	timeout := 5 * time.Second
-	resp, err := uh.Executor.Execute(&http.Client{
-		Timeout: timeout,
-	}, method, url, respId)
-	if err != nil {
+	}
+	// timeout := 5 * time.Second
+	// resp, err := hd.Executor.Execute(&http.Client{
+	// 	Timeout: timeout,
+	// }, task)
+	resCh := hd.Dispatcher.AddNewTask(task)
+	// result := models.NewRequest(task, resp)
+	// hd.StoreController.Add(result)
+	result := <-resCh
+	if result.Error != nil {
 		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
-		log.Println(err)
+		log.Println(result.Error)
 		return
 	}
-	data, err := json.Marshal(resp)
+	data, err := json.Marshal(result.Response)
 	if err != nil {
 		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
 		log.Println(err)
@@ -40,60 +44,60 @@ func (uh *UserHandler) RequestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (uh *UserHandler) AllTasksHandler(w http.ResponseWriter, r *http.Request) {
-	tasks := uh.StoreController.GetAll()
-	data, _ := json.Marshal(tasks)
+func (hd *HandlerData) AllRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	requests := hd.StoreController.GetAll()
+	data, _ := json.Marshal(requests)
 	w.Write(data)
 }
 
-func (uh *UserHandler) AllTasksRemoveHandler(w http.ResponseWriter, r *http.Request) {
-	uh.StoreController.RemoveAll()
-	w.Write([]byte("All tasks was successfully deleted."))
+func (hd *HandlerData) AllRequestsRemoveHandler(w http.ResponseWriter, r *http.Request) {
+	hd.StoreController.RemoveAll()
+	w.Write([]byte("All requests was successfully deleted."))
 }
 
-func (uh *UserHandler) PageTasksHandler(w http.ResponseWriter, r *http.Request) {
+func (hd *HandlerData) PageHandler(w http.ResponseWriter, r *http.Request) {
 	strNum := mux.Vars(r)["number"]
 	num, err := strconv.Atoi(strNum)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	tasks, err := uh.StoreController.GetTasksByPage(num)
+	requests, err := hd.StoreController.GetByPage(num)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	data, _ := json.Marshal(tasks)
+	data, _ := json.Marshal(requests)
 	w.Write(data)
 }
 
-func (uh *UserHandler) TaskIdHandler(w http.ResponseWriter, r *http.Request) {
+func (hd *HandlerData) RequestIdHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	task, err := uh.StoreController.GetById(numId)
+	request, err := hd.StoreController.GetById(numId)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	data, _ := json.Marshal(task)
+	data, _ := json.Marshal(request)
 	w.Write(data)
 }
 
-func (uh *UserHandler) RemoveTaskIdHandler(w http.ResponseWriter, r *http.Request) {
+func (hd *HandlerData) RemoveRequestIdHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	numId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	err = uh.StoreController.RemoveById(numId)
+	err = hd.StoreController.RemoveById(numId)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	w.Write([]byte(fmt.Sprintf("Task with id %d was successfully deleted.", numId)))
+	w.Write([]byte(fmt.Sprintf("Request with id %d was successfully deleted.", numId)))
 }
