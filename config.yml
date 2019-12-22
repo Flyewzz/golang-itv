@@ -3,5 +3,6 @@ itemsPerPage: 2
 api-version: /v1
 workers:
     count: 4
+    timeout: 5
 tasks:
     max: 1000

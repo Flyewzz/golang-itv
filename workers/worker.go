@@ -27,9 +27,8 @@ func NewWorker(id int, tc chan workerModels.Job, ex interfaces.Executor, sc inte
 	}
 }
 
-func (w *Worker) Start() {
+func (w *Worker) Start(timeout time.Duration) {
 	go func() {
-		timeout := 5 * time.Second
 		for job := range w.jobChannel {
 			resp, err := w.exeсutor.Execute(&http.Client{
 				Timeout: timeout,
@@ -41,11 +40,12 @@ func (w *Worker) Start() {
 				w.SendResult(result, job.ResultCh)
 			}(w, result, &job)
 		}
+		w.logger.MakeFinishedLog(w.ID)
 	}()
 }
 
 // Send a done job to its result channel
-func (w *Worker) SendResult(result *models.Result, resCh chan *models.Result) {
+func (w *Worker) SendResult(result *models.Result, resCh chan<- *models.Result) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Error to send a completed job: %v\n", r)

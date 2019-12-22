@@ -5,6 +5,7 @@ import (
 	. "github.com/Flyewzz/golang-itv/models"
 	"github.com/Flyewzz/golang-itv/workers"
 	workerModels "github.com/Flyewzz/golang-itv/workers/models"
+	"time"
 )
 
 type Dispatcher struct {
@@ -12,9 +13,11 @@ type Dispatcher struct {
 	tasksQueue      chan workerModels.Job
 	executor        interfaces.Executor
 	storeController interfaces.Store
+	// in seconds
+	timeout time.Duration
 }
 
-func NewDispatcher(workersCount, maxTasks int, ex interfaces.Executor, sc interfaces.Store) *Dispatcher {
+func NewDispatcher(workersCount, maxTasks, tSeconds int, ex interfaces.Executor, sc interfaces.Store) *Dispatcher {
 	tasksQueue := make(chan workerModels.Job, maxTasks)
 	var workerList []*workers.Worker
 	for i := 0; i < workersCount; i++ {
@@ -24,12 +27,13 @@ func NewDispatcher(workersCount, maxTasks int, ex interfaces.Executor, sc interf
 	return &Dispatcher{
 		workerPool: workerList,
 		tasksQueue: tasksQueue,
+		timeout:    time.Duration(tSeconds) * time.Second,
 	}
 }
 
 func (d *Dispatcher) Dispatch() {
 	for _, worker := range d.workerPool {
-		worker.Start()
+		worker.Start(d.timeout)
 	}
 }
 
