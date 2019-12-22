@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/Flyewzz/golang-itv/features"
 	"github.com/Flyewzz/golang-itv/mocks"
@@ -29,22 +30,22 @@ func TestDispatcher_Stop(t *testing.T) {
 		d    *Dispatcher
 	}{
 		{
-			name: "Dispacher 1",
+			name: "Dispatcher 1",
 			d: NewDispatcher(2, 5, 5,
 				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
 		},
 		{
-			name: "Dispacher 2",
+			name: "Dispatcher 2",
 			d: NewDispatcher(1, 5, 10,
 				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
 		},
 		{
-			name: "Dispacher 3",
+			name: "Dispatcher 3",
 			d: NewDispatcher(10, 10, 10,
 				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
 		},
 		{
-			name: "Dispacher 4",
+			name: "Dispatcher 4",
 			d: NewDispatcher(5, 1, 1,
 				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
 		},
@@ -69,15 +70,65 @@ func TestDispatcher_AddNewTask(t *testing.T) {
 		name string
 		d    *Dispatcher
 		args args
-		want chan *Result
+		want *Result
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Dispatcher succ 1",
+			d: NewDispatcher(2, 5, 5,
+				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
+			args: args{
+				task: &Task{},
+			},
+			want: mocks.GetMockStandardSuccResult(),
+		},
+		{
+			name: "Dispatcher succ 2",
+			d: NewDispatcher(5, 1, 6,
+				mocks.NewMockSuccessExecutor(), mocks.NewMockStoreController()),
+			args: args{
+				task: &Task{},
+			},
+			want: mocks.GetMockStandardSuccResult(),
+		},
+		{
+			name: "Dispatcher fail 1",
+			d: NewDispatcher(15, 1, 10,
+				mocks.NewMockFailExecutor(), mocks.NewMockStoreController()),
+			args: args{
+				task: &Task{},
+			},
+			want: mocks.GetMockStandardFailResult(),
+		},
+		{
+			name: "Dispatcher fail 2",
+			d: NewDispatcher(5, 5, 5,
+				mocks.NewMockFailExecutor(), mocks.NewMockStoreController()),
+			args: args{
+				task: &Task{},
+			},
+			want: mocks.GetMockStandardFailResult(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.AddNewTask(tt.args.task); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Dispatcher.AddNewTask() = %v, want %v", got, tt.want)
+			tt.d.Dispatch()
+			resCh := tt.d.AddNewTask(tt.args.task)
+			timer := time.NewTimer(tt.d.timeout)
+		chanCyc:
+			for {
+				select {
+				case res := <-resCh:
+					if !reflect.DeepEqual(res, tt.want) {
+						t.Errorf("Dispatcher.AddNewTask() = %v, want %v", res, tt.want)
+					}
+					tt.d.Stop()
+					break chanCyc
+				case <-timer.C:
+					t.Error("Time is up")
+					break chanCyc
+				}
 			}
+
 		})
 	}
 }
