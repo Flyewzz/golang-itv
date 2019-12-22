@@ -2,66 +2,16 @@ package workers
 
 import (
 	"errors"
-	"net/http"
 	"reflect"
 	"testing"
 	"time"
+
+	. "github.com/Flyewzz/golang-itv/mocks"
 
 	"github.com/Flyewzz/golang-itv/interfaces"
 	"github.com/Flyewzz/golang-itv/models"
 	workerModels "github.com/Flyewzz/golang-itv/workers/models"
 )
-
-var (
-	FAIL_EXECUTOR_ERROR error = errors.New("Some error... :(")
-)
-
-type SuccessExecutor struct{}
-
-func NewMockSuccessExecutor() *SuccessExecutor { return &SuccessExecutor{} }
-
-func getStandardSuccResponse() *models.Response {
-	return &models.Response{
-		Status:        "200 OK",
-		Headers:       "Header1: Header1",
-		Body:          "body",
-		ContentLength: 4,
-	}
-}
-
-func (ex *SuccessExecutor) Execute(client *http.Client, task *models.Task) (*models.Response, error) {
-	return getStandardSuccResponse(), nil
-}
-
-type FailExecutor struct{}
-
-func NewMockFailExecutor() *FailExecutor { return &FailExecutor{} }
-
-func (ex *FailExecutor) Execute(client *http.Client, task *models.Task) (*models.Response, error) {
-	return nil, FAIL_EXECUTOR_ERROR
-}
-
-type MockStoreController struct {
-	last *models.Request
-}
-
-func NewMockStoreController() *MockStoreController {
-	return &MockStoreController{}
-}
-
-func (st *MockStoreController) Add(request *models.Request) int { st.last = request; return 0 }
-func (st *MockStoreController) GetAll() []models.Request        { return []models.Request{} }
-func (st *MockStoreController) GetByPage(page int) ([]models.Request, error) {
-	return []models.Request{}, nil
-}
-func (st *MockStoreController) GetById(id int) (*models.Request, error) {
-	if id == 0 {
-		return st.last, nil
-	}
-	return nil, errors.New("Incorrect index")
-}
-func (st *MockStoreController) RemoveById(id int) error { return nil }
-func (st *MockStoreController) RemoveAll()              {}
 
 func TestNewWorker(t *testing.T) {
 	type args struct {
@@ -131,7 +81,7 @@ func TestWorker_Start(t *testing.T) {
 			resCh: resultChannels[0],
 			job:   workerModels.NewJob(&models.Task{}, resultChannels[0]),
 			want: &models.Result{
-				Response: getStandardSuccResponse(),
+				Response: GetMockStandardSuccResponse(),
 				Error:    nil,
 			},
 		},
@@ -141,7 +91,7 @@ func TestWorker_Start(t *testing.T) {
 			resCh: resultChannels[1],
 			job:   workerModels.NewJob(&models.Task{}, resultChannels[1]),
 			want: &models.Result{
-				Response: getStandardSuccResponse(),
+				Response: GetMockStandardSuccResponse(),
 				Error:    nil,
 			},
 		},

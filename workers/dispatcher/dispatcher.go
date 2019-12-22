@@ -1,11 +1,16 @@
 package dispatcher
 
 import (
+	"errors"
 	"github.com/Flyewzz/golang-itv/interfaces"
 	. "github.com/Flyewzz/golang-itv/models"
 	"github.com/Flyewzz/golang-itv/workers"
 	workerModels "github.com/Flyewzz/golang-itv/workers/models"
 	"time"
+)
+
+var (
+	DISPATCHER_INVALID_PARAMS error = errors.New("Invalid parameters")
 )
 
 type Dispatcher struct {
