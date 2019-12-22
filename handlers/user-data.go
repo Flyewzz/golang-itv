@@ -4,14 +4,16 @@ import (
 	. "github.com/Flyewzz/golang-itv/interfaces"
 )
 
-type UserHandler struct {
+type HandlerData struct {
 	Executor        Executor
 	StoreController Store
+	Dispatcher      Dispatcher
 }
 
-func NewUserHandler(ex Executor, sc Store) *UserHandler {
-	return &UserHandler{
+func NewHandlerData(ex Executor, sc Store, d Dispatcher) *HandlerData {
+	return &HandlerData{
 		Executor:        ex,
 		StoreController: sc,
+		Dispatcher:      d,
 	}
 }

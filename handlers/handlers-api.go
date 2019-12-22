@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func ConfigureHandlers(r *mux.Router, uh *UserHandler) {
+func ConfigureHandlers(r *mux.Router, uh *HandlerData) {
 	r.HandleFunc("/request", uh.RequestHandler).Methods("GET")
 	r.HandleFunc("/requests", uh.AllRequestsHandler).Methods("GET")
 	r.HandleFunc("/requests", uh.AllRequestsRemoveHandler).Methods("DELETE")

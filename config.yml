@@ -1,3 +1,7 @@
 port: 80
 itemsPerPage: 2
 api-version: /v1
+workers:
+    count: 4
+tasks:
+    max: 1000
