@@ -28,20 +28,37 @@ func NewWorker(id int, tc chan workerModels.Job, ex interfaces.Executor, sc inte
 }
 
 func (w *Worker) Start(timeout time.Duration) {
-	go func() {
+	go func(w *Worker) {
 		for job := range w.jobChannel {
 			resp, err := w.exeсutor.Execute(&http.Client{
 				Timeout: timeout,
 			}, job.Task)
 			result := models.NewResult(resp, err)
-			go func(w *Worker, result *models.Result, job *workerModels.Job) {
+			type data struct {
+				w      *Worker
+				result *models.Result
+				job    *workerModels.Job
+				err    error
+			}
+			sending := &data{
+				w:      w,
+				result: result,
+				job:    &job,
+				err:    err,
+			}
+			go func(data *data) {
 				// Before sending we should save request to the storage
-				w.SaveResult(job, result)
-				w.SendResult(result, job.ResultCh)
-			}(w, result, &job)
+				// (if there wasn't an error)
+				if data.err == nil {
+					// Save only corrected results
+					data.w.SaveResult(data.job, data.result)
+				}
+				data.w.SendResult(data.result, data.job.ResultCh)
+				// Make a finished log only after done the task
+				data.w.logger.MakeFinishedLog(w.ID)
+			}(sending)
 		}
-		w.logger.MakeFinishedLog(w.ID)
-	}()
+	}(w)
 }
 
 // Send a done job to its result channel
